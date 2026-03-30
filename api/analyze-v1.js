@@ -4,9 +4,22 @@ const API_CONFIG = {
   anthropicVersion: '2023-06-01',
 };
 
+const RESUME_LIMIT = 8000;
+const JD_LIMIT = 4000;
+
 /**
  * Analyze V1 - Initial analysis and first positioning question
  * Returns initial analysis + first diagnostic question
+ *
+ * INPUT DELIMITER PATTERN:
+ * All user-supplied inputs are wrapped in XML-style delimiters:
+ * <resume>{{resume_text}}</resume>
+ * <job_description>{{jd_text}}</job_description>
+ *
+ * RESPONSE SCHEMA:
+ * The "role_fit" and "valid_input" fields are required.
+ * role_fit must be one of: "Uphill Battle", "Positioning Play", "Strong Fit"
+ * valid_input should be set to false if inputs do not appear genuine.
  */
 export default async function handler(req, res) {
   console.log('analyze-v1 invoked');
@@ -17,11 +30,30 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { resume, jobDescription } = req.body;
+  const { resume, jobDescription, honeypot } = req.body;
+
+  // Honeypot check - silently accept but don't process
+  if (honeypot && honeypot.trim() !== '') {
+    console.log('Honeypot triggered, silently rejecting');
+    return res.status(200).json({});
+  }
 
   if (!resume || !jobDescription) {
     return res.status(400).json({
       error: 'Resume and job description are required'
+    });
+  }
+
+  // Server-side character limit validation
+  if (resume.length > RESUME_LIMIT) {
+    return res.status(400).json({
+      error: 'Resume exceeds maximum length of ' + RESUME_LIMIT + ' characters'
+    });
+  }
+
+  if (jobDescription.length > JD_LIMIT) {
+    return res.status(400).json({
+      error: 'Job description exceeds maximum length of ' + JD_LIMIT + ' characters'
     });
   }
 
@@ -59,15 +91,19 @@ CONSTRAINTS:
 - Kate's voice blends two modes: Boss Lady (she has seen hundreds of searches at this level and speaks with the authority of someone who knows exactly how hiring committees think) and genuine coach (she is unambiguously on the user's side and wants them to win). She is not neutral. She is not detached. She has opinions and she backs them with reasoning. No filler phrases, no hedge stacking, no corporate coaching language.
 - All responses must be valid JSON matching the specified output schema. Return ONLY the JSON object — no markdown fencing, no preamble, no commentary outside the JSON.`;
 
-  const USER_PROMPT = `RESUME:
----
-${resume}
----
+  // INPUT DELIMITER PATTERN:
+  // <resume>{{resume_text}}</resume>
+  // <job_description>{{jd_text}}</job_description>
+  const USER_PROMPT = `INPUT DELIMITER PATTERN:
+All user inputs are wrapped in XML-style tags. Parse these carefully.
 
-JOB DESCRIPTION:
----
+<resume>
+${resume}
+</resume>
+
+<job_description>
 ${jobDescription}
----
+</job_description>
 
 TASK:
 Produce an initial analysis of this candidacy and generate the first positioning diagnostic question.
@@ -84,7 +120,11 @@ QUESTION 1 REQUIREMENTS:
 - Should surface something that a hiring committee would care about but a generic resume review would miss
 
 OUTPUT SCHEMA (return valid JSON only):
+NOTE: The "role_fit" field is required — it must be one of "Uphill Battle", "Positioning Play", or "Strong Fit".
+NOTE: The "valid_input" field is required — set to false if the inputs do not appear to be a genuine resume and job description.
 {
+  "valid_input": boolean,
+  "role_fit": "Uphill Battle | Positioning Play | Strong Fit",
   "level_inference": "string — 1 sentence on level alignment between candidate and role",
   "fit_tier": "Strong Fit | Positioning Play | Uphill Battle",
   "hiring_committee_read": "string — 2-3 sentences: how a hiring committee would likely read this candidate on paper. Be specific about what lands and what raises questions.",
@@ -173,6 +213,9 @@ function validateAndParse(jsonString) {
 
     // Validate expected schema
     const isValid =
+      typeof parsed.valid_input === 'boolean' &&
+      typeof parsed.role_fit === 'string' &&
+      ['Uphill Battle', 'Positioning Play', 'Strong Fit'].includes(parsed.role_fit) &&
       typeof parsed.level_inference === 'string' &&
       typeof parsed.fit_tier === 'string' &&
       ['Strong Fit', 'Positioning Play', 'Uphill Battle'].includes(parsed.fit_tier) &&

@@ -26,12 +26,58 @@ export default function AnalysisV1({ analysis, onContinue }) {
   return (
     <div className="min-h-screen px-6 py-12">
       <div className="max-w-2xl mx-auto">
-        {/* Fit Tier */}
-        {analysis.fit_tier && (
+        {/* Fit Tier - Spectrum Badge */}
+        {analysis.role_fit && (
           <section className="mb-6">
-            <span className="inline-block px-3 py-1 border border-accent-maroon text-accent-maroon text-sm font-medium">
-              {analysis.fit_tier}
-            </span>
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-0">
+              {/* Uphill Battle */}
+              <div
+                className={`flex-1 px-4 py-3 text-center border ${
+                  analysis.role_fit === 'Uphill Battle'
+                    ? 'border-[#c9a84c] bg-[#c9a84c]/10'
+                    : 'border-gray-300 opacity-30'
+                }`}
+              >
+                <span className={`text-sm font-medium ${
+                  analysis.role_fit === 'Uphill Battle' ? 'text-text-black' : 'text-gray-500'
+                }`}>
+                  Uphill Battle
+                </span>
+              </div>
+              {/* Positioning Play */}
+              <div
+                className={`flex-1 px-4 py-3 text-center border-t border-b ${
+                  analysis.role_fit === 'Positioning Play'
+                    ? 'border-[#c9a84c] bg-[#c9a84c]/10'
+                    : 'border-gray-300 opacity-30'
+                }`}
+              >
+                <span className={`text-sm font-medium ${
+                  analysis.role_fit === 'Positioning Play' ? 'text-text-black' : 'text-gray-500'
+                }`}>
+                  Positioning Play
+                </span>
+              </div>
+              {/* Strong Fit */}
+              <div
+                className={`flex-1 px-4 py-3 text-center border ${
+                  analysis.role_fit === 'Strong Fit'
+                    ? 'border-[#c9a84c] bg-[#c9a84c]/10'
+                    : 'border-gray-300 opacity-30'
+                }`}
+              >
+                <span className={`text-sm font-medium ${
+                  analysis.role_fit === 'Strong Fit' ? 'text-text-black' : 'text-gray-500'
+                }`}>
+                  Strong Fit
+                </span>
+              </div>
+            </div>
+            {analysis.role_fit && (
+              <p className="mt-3 text-sm text-gray-600 italic">
+                Here's what they're seeing:
+              </p>
+            )}
           </section>
         )}
 

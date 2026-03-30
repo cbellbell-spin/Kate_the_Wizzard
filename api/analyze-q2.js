@@ -4,9 +4,20 @@ const API_CONFIG = {
   anthropicVersion: '2023-06-01',
 };
 
+const RESUME_LIMIT = 8000;
+const JD_LIMIT = 4000;
+const CONTEXT_LIMIT = 1000;
+
 /**
  * Analyze Q2 - Generate second question based on first answer
  * Returns analysis update and question 2 based on accumulated context
+ *
+ * INPUT DELIMITER PATTERN:
+ * All user-supplied inputs are wrapped in XML-style delimiters:
+ * <resume>{{resume_text}}</resume>
+ * <job_description>{{jd_text}}</job_description>
+ * <q1_answer>{{q1_answer_text}}</q1_answer>
+ * <additional_context>{{context_text}}</additional_context> (only if provided)
  */
 export default async function handler(req, res) {
   console.log('analyze-q2 invoked, ANTHROPIC_API_KEY present:', !!process.env.ANTHROPIC_API_KEY);
@@ -16,11 +27,36 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { resume, jobDescription, v1Analysis, q1Answer, q1QuestionText } = req.body;
+  const { resume, jobDescription, v1Analysis, q1Answer, q1QuestionText, additionalContext, honeypot } = req.body;
+
+  // Honeypot check - silently accept but don't process
+  if (honeypot && honeypot.trim() !== '') {
+    console.log('Honeypot triggered, silently rejecting');
+    return res.status(200).json({});
+  }
 
   if (!resume || !jobDescription || !v1Analysis || q1Answer === undefined || !q1QuestionText) {
     return res.status(400).json({
       error: 'Resume, job description, v1 analysis, q1 question text, and q1 answer are required'
+    });
+  }
+
+  // Server-side character limit validation
+  if (resume.length > RESUME_LIMIT) {
+    return res.status(400).json({
+      error: 'Resume exceeds maximum length of ' + RESUME_LIMIT + ' characters'
+    });
+  }
+
+  if (jobDescription.length > JD_LIMIT) {
+    return res.status(400).json({
+      error: 'Job description exceeds maximum length of ' + JD_LIMIT + ' characters'
+    });
+  }
+
+  if (additionalContext && additionalContext.length > CONTEXT_LIMIT) {
+    return res.status(400).json({
+      error: 'Additional context exceeds maximum length of ' + CONTEXT_LIMIT + ' characters'
     });
   }
 
@@ -58,19 +94,31 @@ CONSTRAINTS:
 - Kate's voice blends two modes: Boss Lady (she has seen hundreds of searches at this level and speaks with the authority of someone who knows exactly how hiring committees think) and genuine coach (she is unambiguously on the user's side and wants them to win). She is not neutral. She is not detached. She has opinions and she backs them with reasoning. No filler phrases, no hedge stacking, no corporate coaching language.
 - All responses must be valid JSON matching the specified output schema. Return ONLY the JSON object — no markdown fencing, no preamble, no commentary outside the JSON.`;
 
-  const USER_PROMPT = `CONTEXT FROM PREVIOUS ANALYSIS:
----
-${JSON.stringify(v1Analysis, null, 2)}
----
+  // Build user prompt with XML delimiters
+  let userPromptContent = `INPUT DELIMITER PATTERN:
+All user inputs are wrapped in XML-style tags. Parse these carefully.
 
-JOB DESCRIPTION:
----
+<resume>
+${resume}
+</resume>
+
+<job_description>
 ${jobDescription}
----
+</job_description>
 
-USER'S ANSWER TO QUESTION 1:
-Question: ${q1QuestionText}
-Selected: ${q1Answer || 'SKIPPED'}
+<q1_answer>
+${q1Answer || 'SKIPPED'}
+</q1_answer>`;
+
+  if (additionalContext && additionalContext.trim()) {
+    userPromptContent += `
+
+<additional_context>
+${additionalContext}
+</additional_context>`;
+  }
+
+  userPromptContent += `
 
 TASK:
 The user's answer to Question 1 tells you something about their positioning strategy (or lack of one). Use it to:
@@ -101,6 +149,8 @@ OUTPUT SCHEMA (return valid JSON only):
     ]
   }
 }`;
+
+  const USER_PROMPT = userPromptContent;
 
   const maxTokens = 2000;
   const temperature = 0.5;

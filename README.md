@@ -4,9 +4,9 @@ A React web app for analyzing resumes and job descriptions from a hiring committ
 
 ## Tech Stack
 
-- **Frontend**: React + Vite + Tailwind CSS
+- **Frontend**: React 19 + Vite + Tailwind CSS
 - **Backend**: Vercel Serverless Functions (Node.js)
-- **AI**: Anthropic Claude API
+- **AI**: Anthropic Claude API (claude-sonnet-4-6)
 
 ## Project Structure
 
@@ -14,141 +14,199 @@ A React web app for analyzing resumes and job descriptions from a hiring committ
 kate/
 ├── api/
 │   ├── config.js           # Shared API configuration
-│   ├── analyze-v1.js       # Initial resume + JD analysis
-│   ├── analyze-q2.js       # Generate question 2
+│   ├── analyze-v1.js       # Initial resume + JD analysis + Q1
+│   ├── analyze-q2.js       # Generate question 2 based on Q1 answer
 │   └── analyze-final.js     # Final comprehensive analysis
 ├── src/
-│   ├── components/         # React components
-│   ├── utils/             # PDF parsing utility
+│   ├── components/
+│   │   ├── LandingInput.jsx    # Stage 1: Resume + JD input
+│   │   ├── AnalysisV1.jsx      # Stage 2a: Initial analysis display
+│   │   ├── Question.jsx        # Stage 2b/3: MC question + optional context
+│   │   ├── FinalAnalysis.jsx   # Stage 4: Final analysis display
+│   │   ├── Conversion.jsx      # Stage 5: Setup + handoff summary
+│   │   └── Loading.jsx         # Loading spinner component
+│   ├── utils/
+│   │   └── pdfParser.js   # Client-side PDF parsing
 │   ├── App.jsx            # Main app with stage management
-│   └── index.css          # Global styles
+│   └── index.css          # Tailwind + Spectral font
 ├── vercel.json            # Vercel routing configuration
-└── .env.local             # Local environment variables
+└── tailwind.config.js     # Tailwind customization
 ```
 
-## Local Development Setup
+## Environment Variables
 
-### 1. Install Dependencies
+Required environment variables in Vercel:
+
+| Name | Description |
+|------|-------------|
+| `ANTHROPIC_API_KEY` | Anthropic API key for Claude access |
+
+To add/update environment variables:
+```bash
+vercel env add ANTHROPIC_API_KEY production
+```
+
+## Local Development
 
 ```bash
-cd kate
+# Install dependencies
 npm install
-```
 
-### 2. Configure Environment Variables
-
-Create a `.env.local` file in the project root:
-
-```bash
-ANTHROPIC_API_KEY=your_api_key_here
-```
-
-To get an Anthropic API key:
-1. Go to https://console.anthropic.com/
-2. Sign up or log in
-3. Navigate to API Keys
-4. Create a new API key
-
-### 3. Run Development Server
-
-```bash
+# Start dev server (frontend only)
 npm run dev
 ```
 
 The app will be available at `http://localhost:5173`
 
-### 4. Test API Functions Locally
+Note: API functions require Vercel environment variables. Use `vercel env pull` to get local copies.
 
-The serverless functions run at `/api/*` endpoints. With `npm run dev`, these are handled by Vercel CLI or require a separate local server setup.
-
-## Vercel Deployment
-
-### 1. Install Vercel CLI (if not already)
+## Deployment
 
 ```bash
-npm install -g vercel
-```
-
-### 2. Deploy
-
-```bash
-cd kate
+# Deploy to preview
 vercel
+
+# Deploy to production
+vercel --prod --force
 ```
 
-### 3. Add Environment Variable in Vercel
-
-1. Go to your project in the [Vercel Dashboard](https://vercel.com/dashboard)
-2. Navigate to Settings → Environment Variables
-3. Add `ANTHROPIC_API_KEY` with your API key value
-
-### 4. Redeploy
-
-After adding the environment variable, redeploy your project:
-
-```bash
-vercel --prod
-```
+The `vercel.json` configures:
+- API functions: `api/**/*.js` → `@vercel/node`
+- Frontend build: `package.json` → `@vercel/static-build` (distDir: `dist`)
+- Routes: `/api/analyze-v1`, `/api/analyze-q2`, `/api/analyze-final`
 
 ## API Endpoints
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/analyze-v1` | POST | Initial analysis of resume and job description |
-| `/api/analyze-q2` | POST | Generate second question based on first answer |
-| `/api/analyze-final` | POST | Final comprehensive analysis |
+### POST /api/analyze-v1
 
-### API Request/Response Formats
+Initial analysis and first positioning question.
 
-**POST /api/analyze-v1**
+**Request Body:**
 ```json
 {
-  "resume": "string",
-  "jobDescription": "string"
+  "resume": "string (max 8000 chars)",
+  "jobDescription": "string (max 4000 chars)"
 }
 ```
 
-**POST /api/analyze-q2**
+**Response Schema:**
+```json
+{
+  "valid_input": boolean,
+  "role_fit": "Uphill Battle | Positioning Play | Strong Fit",
+  "level_inference": "string",
+  "fit_tier": "string",
+  "hiring_committee_read": "string",
+  "gaps": [{"label": "string", "detail": "string", "severity": "string"}],
+  "what_strong_looks_like": "string",
+  "complement_skill": "string",
+  "priority_action": "string",
+  "question_1": {
+    "question_text": "string",
+    "context": "string",
+    "dimension": "string",
+    "options": [{"label": "A", "text": "string"}, ...]
+  }
+}
+```
+
+### POST /api/analyze-q2
+
+Second question generation based on first answer.
+
+**Request Body:**
 ```json
 {
   "resume": "string",
   "jobDescription": "string",
-  "v1Analysis": {...},
-  "q1Answer": "string"
+  "v1Analysis": {},
+  "q1Answer": "string | null",
+  "q1QuestionText": "string",
+  "additionalContext": "string | null (max 1000 chars)"
 }
 ```
 
-**POST /api/analyze-final**
+### POST /api/analyze-final
+
+Final analysis with all accumulated context.
+
+**Request Body:**
 ```json
 {
   "resume": "string",
   "jobDescription": "string",
-  "v1Analysis": {...},
-  "q1Answer": "string",
-  "q2Answer": "string"
+  "v1Analysis": {},
+  "q2Data": {},
+  "q1Answer": "string | null",
+  "q2Answer": "string | null",
+  "q1Context": "string | null",
+  "q2Context": "string | null",
+  "q1QuestionText": "string",
+  "q2QuestionText": "string"
 }
 ```
 
-## Configuration
+## Input Delimiter Pattern
 
-The model name is stored in `/api/config.js`:
+All user-supplied inputs are wrapped in XML-style delimiters before injection into prompts:
 
-```javascript
-const MODEL_NAME = 'claude-sonnet-4-7-latest';
+```
+<resume>{{resume_text}}</resume>
+<job_description>{{jd_text}}</job_description>
+<q1_answer>{{q1_answer_text}}</q1_answer>
+<q2_answer>{{q2_answer_text}}</q2_answer>
+<additional_context>{{context_text}}</additional_context>
 ```
 
-Update this value to use a different Claude model.
+Empty tags are omitted. Only relevant tags for each call are included.
 
-## Rate Limiting
+## Character Limits
 
-Rate limiting placeholders are included in each serverless function. To implement:
+| Field | Limit |
+|-------|-------|
+| Resume | 8,000 characters |
+| Job Description | 4,000 characters |
+| Additional Context (per question) | 1,000 characters |
 
-1. Add your rate limiting logic in the marked placeholder block
-2. Check session tokens or IP addresses
-3. Return 429 status when limit is exceeded
+Limits are enforced both client-side and server-side (returns HTTP 400).
+
+## Security Features
+
+### Honeypot
+A hidden honeypot field catches bots. If filled, the request is silently rejected (HTTP 200 with empty response, no API call fired).
+
+### Input Validation
+The `valid_input` boolean in the V1 response allows Kate to flag non-genuine inputs. Frontend displays an error state if `valid_input === false`.
+
+### Rate Limiting
+Rate limiting placeholders are included in each serverless function. Implement by adding logic in the marked placeholder block.
+
+## App Stages
+
+```
+0: LANDING         → Resume + JD input
+1: LOADING_V1      → Loading state
+2: ANALYSIS_V1     → Initial analysis + Q1
+3: LOADING_Q2      → Loading state
+4: QUESTION_2      → Q2 + optional context
+5: LOADING_FINAL    → Loading state
+6: FINAL_ANALYSIS  → Final analysis display
+7: CTA              → "Meet Kate" prompt
+8: CONVERSION       → Setup steps + handoff summary
+9: VALIDATION_ERROR → Error state with Try Again (preserves inputs)
+```
+
+## Design System
+
+- **Background**: Off-white (`#FAF8F5`)
+- **Text**: Black (`#1A1A1A`)
+- **Accent**: Maroon (`#8B2635`)
+- **Gold**: `#C9A84C` (role fit spectrum active state, counter warning)
+- **Font**: Spectral (serif)
 
 ## Notes
 
 - The PDF parser uses pdf.js to extract text client-side — no PDF data is sent to the server
 - All API calls use temperature 0.3 for analysis endpoints and 0.5 for question generation
 - JSON validation with one retry is implemented on all API responses
+- Model name is stored in `/api/config.js` — update `MODEL_NAME` to use a different Claude model

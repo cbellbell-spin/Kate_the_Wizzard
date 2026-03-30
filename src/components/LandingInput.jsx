@@ -1,6 +1,10 @@
 import { useState, useRef } from 'react';
 import { parsePDFFile } from '../utils/pdfParser';
 
+const RESUME_LIMIT = 8000;
+const JD_LIMIT = 4000;
+const COUNTER_WARNING_THRESHOLD = 200;
+
 export default function LandingInput({ onAnalyze }) {
   const [resume, setResume] = useState('');
   const [jobDescription, setJobDescription] = useState('');
@@ -8,6 +12,8 @@ export default function LandingInput({ onAnalyze }) {
   const [useFallback, setUseFallback] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
   const [fileName, setFileName] = useState('');
+  const [honeypot, setHoneypot] = useState('');
+  const [errors, setErrors] = useState({ resume: '', jobDescription: '' });
   const fileInputRef = useRef(null);
 
   const handleFileChange = async (e) => {
@@ -21,6 +27,7 @@ export default function LandingInput({ onAnalyze }) {
       const text = await parsePDFFile(file);
       setPdfText(text);
       setResume(text);
+      setErrors(prev => ({ ...prev, resume: '' }));
     } catch (error) {
       console.error('PDF parsing error:', error);
       setUseFallback(true);
@@ -29,12 +36,40 @@ export default function LandingInput({ onAnalyze }) {
     }
   };
 
-  const handleAnalyze = () => {
+  const validateInputs = () => {
+    const newErrors = { resume: '', jobDescription: '' };
+    let isValid = true;
+
     const resumeText = useFallback ? resume : pdfText || resume;
-    onAnalyze(resumeText, jobDescription);
+    if (resumeText.length > RESUME_LIMIT) {
+      newErrors.resume = "Your resume is longer than Kate needs. Try trimming it to your most recent 10 years.";
+      isValid = false;
+    }
+
+    if (jobDescription.length > JD_LIMIT) {
+      newErrors.jobDescription = "This is longer than needed. Try keeping it to the key requirements and responsibilities.";
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
   };
 
-  const isValid = resume.trim() && jobDescription.trim();
+  const handleAnalyze = () => {
+    if (!validateInputs()) return;
+
+    const resumeText = useFallback ? resume : pdfText || resume;
+    onAnalyze(resumeText, jobDescription, honeypot);
+  };
+
+  const isValid = resume.trim() && jobDescription.trim() && !errors.resume && !errors.jobDescription;
+
+  const getCounterColor = (current, limit) => {
+    const remaining = limit - current.length;
+    if (remaining <= 0) return 'text-red-600';
+    if (remaining <= COUNTER_WARNING_THRESHOLD) return 'text-[#c9a84c]';
+    return 'text-gray-400';
+  };
 
   return (
     <div className="min-h-screen flex flex-col justify-center px-6 py-12">
@@ -45,6 +80,17 @@ export default function LandingInput({ onAnalyze }) {
         <h2 className="text-lg text-gray-500 mb-12 text-left leading-relaxed">
           Kate works with you through every stage of your search. Today, she starts with your resume.
         </h2>
+
+        {/* Honeypot field - hidden off-screen */}
+        <input
+          type="text"
+          name="website"
+          value={honeypot}
+          onChange={(e) => setHoneypot(e.target.value)}
+          tabIndex={-1}
+          autoComplete="off"
+          className="fixed top-[-9999px] left-[-9999px]"
+        />
 
         <div className="space-y-8">
           {/* Resume Input Section */}
@@ -100,21 +146,32 @@ export default function LandingInput({ onAnalyze }) {
               <div className="space-y-3">
                 <textarea
                   value={resume}
-                  onChange={(e) => setResume(e.target.value)}
+                  onChange={(e) => {
+                    setResume(e.target.value);
+                    setErrors(prev => ({ ...prev, resume: '' }));
+                  }}
                   placeholder="Paste your resume text here..."
                   className="w-full h-48 px-4 py-3 bg-white border border-gray-300 text-text-black placeholder-gray-400 focus:outline-none focus:border-accent-maroon transition-colors resize-none"
                 />
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUseFallback(false);
-                    setPdfText('');
-                    setFileName('');
-                  }}
-                  className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
-                >
-                  Use PDF upload instead
-                </button>
+                <div className="flex justify-between items-center">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUseFallback(false);
+                      setPdfText('');
+                      setFileName('');
+                    }}
+                    className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                  >
+                    Use PDF upload instead
+                  </button>
+                  <span className={`text-xs ${getCounterColor(resume.length, RESUME_LIMIT)}`}>
+                    {RESUME_LIMIT - resume.length} characters remaining
+                  </span>
+                </div>
+                {errors.resume && (
+                  <p className="text-sm text-red-600 mt-1">{errors.resume}</p>
+                )}
               </div>
             )}
           </div>
@@ -126,10 +183,22 @@ export default function LandingInput({ onAnalyze }) {
             </label>
             <textarea
               value={jobDescription}
-              onChange={(e) => setJobDescription(e.target.value)}
+              onChange={(e) => {
+                setJobDescription(e.target.value);
+                setErrors(prev => ({ ...prev, jobDescription: '' }));
+              }}
               placeholder="Paste the job description here..."
               className="w-full h-48 px-4 py-3 bg-white border border-gray-300 text-text-black placeholder-gray-400 focus:outline-none focus:border-accent-maroon transition-colors resize-none"
             />
+            <div className="flex justify-between items-center mt-2">
+              <span className="text-xs text-gray-400"> </span>
+              <span className={`text-xs ${getCounterColor(jobDescription.length, JD_LIMIT)}`}>
+                {JD_LIMIT - jobDescription.length} characters remaining
+              </span>
+            </div>
+            {errors.jobDescription && (
+              <p className="text-sm text-red-600 mt-1">{errors.jobDescription}</p>
+            )}
           </div>
 
           {/* Analyze Button */}

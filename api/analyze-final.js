@@ -4,9 +4,21 @@ const API_CONFIG = {
   anthropicVersion: '2023-06-01',
 };
 
+const RESUME_LIMIT = 8000;
+const JD_LIMIT = 4000;
+const CONTEXT_LIMIT = 1000;
+
 /**
  * Analyze Final - Complete analysis with all context
  * Returns comprehensive final analysis with handoff summary
+ *
+ * INPUT DELIMITER PATTERN:
+ * All user-supplied inputs are wrapped in XML-style delimiters:
+ * <resume>{{resume_text}}</resume>
+ * <job_description>{{jd_text}}</job_description>
+ * <q1_answer>{{q1_answer_text}}</q1_answer>
+ * <q2_answer>{{q2_answer_text}}</q2_answer>
+ * <additional_context>{{context_text}}</additional_context> (only if provided for either question)
  */
 export default async function handler(req, res) {
   console.log('analyze-final invoked, ANTHROPIC_API_KEY present:', !!process.env.ANTHROPIC_API_KEY);
@@ -16,12 +28,43 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { resume, jobDescription, v1Analysis, q2Data, q1Answer, q2Answer, q1QuestionText, q2QuestionText } = req.body;
+  const { resume, jobDescription, v1Analysis, q2Data, q1Answer, q2Answer, q1QuestionText, q2QuestionText, q1Context, q2Context, honeypot } = req.body;
+
+  // Honeypot check - silently accept but don't process
+  if (honeypot && honeypot.trim() !== '') {
+    console.log('Honeypot triggered, silently rejecting');
+    return res.status(200).json({});
+  }
 
   if (!resume || !jobDescription || !v1Analysis ||
       q1Answer === undefined || q2Answer === undefined) {
     return res.status(400).json({
       error: 'All context (resume, JD, v1, q1, q2) is required'
+    });
+  }
+
+  // Server-side character limit validation
+  if (resume.length > RESUME_LIMIT) {
+    return res.status(400).json({
+      error: 'Resume exceeds maximum length of ' + RESUME_LIMIT + ' characters'
+    });
+  }
+
+  if (jobDescription.length > JD_LIMIT) {
+    return res.status(400).json({
+      error: 'Job description exceeds maximum length of ' + JD_LIMIT + ' characters'
+    });
+  }
+
+  if (q1Context && q1Context.length > CONTEXT_LIMIT) {
+    return res.status(400).json({
+      error: 'Q1 context exceeds maximum length of ' + CONTEXT_LIMIT + ' characters'
+    });
+  }
+
+  if (q2Context && q2Context.length > CONTEXT_LIMIT) {
+    return res.status(400).json({
+      error: 'Q2 context exceeds maximum length of ' + CONTEXT_LIMIT + ' characters'
     });
   }
 
@@ -59,27 +102,45 @@ CONSTRAINTS:
 - Kate's voice blends two modes: Boss Lady (she has seen hundreds of searches at this level and speaks with the authority of someone who knows exactly how hiring committees think) and genuine coach (she is unambiguously on the user's side and wants them to win). She is not neutral. She is not detached. She has opinions and she backs them with reasoning. No filler phrases, no hedge stacking, no corporate coaching language.
 - All responses must be valid JSON matching the specified output schema. Return ONLY the JSON object — no markdown fencing, no preamble, no commentary outside the JSON.`;
 
-  const USER_PROMPT = `INITIAL ANALYSIS:
----
-${JSON.stringify(v1Analysis, null, 2)}
----
+  // Build user prompt with XML delimiters
+  let userPromptContent = `INPUT DELIMITER PATTERN:
+All user inputs are wrapped in XML-style tags. Parse these carefully.
 
-ANALYSIS UPDATE FROM Q1:
----
-${JSON.stringify(q2Data, null, 2)}
----
+<resume>
+${resume}
+</resume>
 
-JOB DESCRIPTION:
----
+<job_description>
 ${jobDescription}
----
+</job_description>
 
-USER'S ANSWERS:
-Q1: ${q1QuestionText || 'N/A'}
-Answer: ${q1Answer || 'SKIPPED'}
+<q1_answer>
+${q1Answer || 'SKIPPED'}
+</q1_answer>`;
 
-Q2: ${q2QuestionText || 'N/A'}
-Answer: ${q2Answer || 'SKIPPED'}
+  if (q1Context && q1Context.trim()) {
+    userPromptContent += `
+
+<additional_context>
+Q1 Context: ${q1Context}
+</additional_context>`;
+  }
+
+  userPromptContent += `
+
+<q2_answer>
+${q2Answer || 'SKIPPED'}
+</q2_answer>`;
+
+  if (q2Context && q2Context.trim()) {
+    userPromptContent += `
+
+<additional_context>
+Q2 Context: ${q2Context}
+</additional_context>`;
+  }
+
+  userPromptContent += `
 
 TASK:
 Produce the final sharpened analysis incorporating both answers. This is the deliverable the user will see and the basis for their decision to install Kate for a full coaching session.
@@ -105,6 +166,8 @@ OUTPUT SCHEMA (return valid JSON only):
   "priority_action": "string — 1 sentence: the single most important thing this candidate should do before applying or interviewing",
   "handoff_summary": "string — A paragraph formatted for pasting into Kate's first session. Should include: fit tier, key gaps identified, positioning direction suggested by the user's MC answers, complement skill, and any open questions the wizard surfaced but did not resolve. Write it as if Kate is reading her own notes from a colleague, not as if the user is summarizing for Kate."
 }`;
+
+  const USER_PROMPT = userPromptContent;
 
   const maxTokens = 2500;
   const temperature = 0.3;
