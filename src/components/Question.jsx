@@ -43,7 +43,8 @@ export default function Question({ questionData, onContinue }) {
 
   const handleSkip = () => {
     setSkipped(true);
-    onContinue(null, null);
+    setShowContext(true);
+    // Don't immediately continue - show context field so user can optionally add context
   };
 
   return (
