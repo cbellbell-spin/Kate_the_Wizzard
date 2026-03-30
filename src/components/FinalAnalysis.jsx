@@ -1,19 +1,5 @@
-import { useState } from 'react';
-
 export default function FinalAnalysis({ analysis, onMeetKate }) {
-  const [copied, setCopied] = useState(false);
-
   if (!analysis) return null;
-
-  const copyToClipboard = async (text) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
-    }
-  };
 
   const severityColors = {
     critical: 'text-red-700 bg-red-50 border-red-200',
@@ -100,28 +86,6 @@ export default function FinalAnalysis({ analysis, onMeetKate }) {
               Priority Action
             </h2>
             <p className="text-lg leading-relaxed text-text-black">{analysis.priority_action}</p>
-          </section>
-        )}
-
-        {/* Handoff Summary */}
-        {analysis.handoff_summary && (
-          <section className="mb-12">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-accent-maroon text-sm font-medium uppercase tracking-wide">
-                Handoff Summary
-              </h2>
-            </div>
-            <div className="bg-white border border-gray-300 p-6">
-              <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                {analysis.handoff_summary}
-              </p>
-            </div>
-            <button
-              onClick={() => copyToClipboard(analysis.handoff_summary)}
-              className="mt-4 py-2 px-4 border border-gray-300 text-gray-600 hover:text-text-black hover:border-gray-400 transition-colors text-sm"
-            >
-              {copied ? 'Copied!' : 'Copy to clipboard'}
-            </button>
           </section>
         )}
 

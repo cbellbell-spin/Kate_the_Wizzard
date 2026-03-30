@@ -14,7 +14,8 @@ const STAGES = {
   QUESTION_2: 4,
   LOADING_FINAL: 5,
   FINAL_ANALYSIS: 6,
-  CONVERSION: 7,
+  CTA: 7,
+  CONVERSION: 8,
 };
 
 const V1_LOADING_MESSAGES = [
@@ -135,10 +136,10 @@ function App() {
       setError(err.message);
       setStage(STAGES.QUESTION_2);
     }
-  }, [formData, v1Analysis, q1Answer]);
+  }, [formData, v1Analysis, q2Data, q1Answer]);
 
   const handleMeetKate = useCallback(() => {
-    setStage(STAGES.CONVERSION);
+    setStage(STAGES.CTA);
   }, []);
 
   const handleReset = useCallback(() => {
@@ -201,6 +202,22 @@ function App() {
           analysis={finalAnalysis}
           onMeetKate={handleMeetKate}
         />
+      )}
+
+      {stage === STAGES.CTA && finalAnalysis && (
+        <div className="min-h-screen px-6 py-12 flex items-center justify-center">
+          <div className="max-w-lg mx-auto text-center">
+            <p className="text-xl md:text-2xl mb-8 text-text-black leading-relaxed">
+              Want more insight like this and help addressing this feedback?
+            </p>
+            <button
+              onClick={() => setStage(STAGES.CONVERSION)}
+              className="py-4 px-8 bg-accent-maroon text-white font-semibold text-lg hover:bg-red-900 transition-colors"
+            >
+              Meet Kate →
+            </button>
+          </div>
+        </div>
       )}
 
       {stage === STAGES.CONVERSION && finalAnalysis && (

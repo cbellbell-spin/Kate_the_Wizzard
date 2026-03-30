@@ -40,11 +40,11 @@ export default function LandingInput({ onAnalyze }) {
     <div className="min-h-screen flex flex-col justify-center px-6 py-12">
       <div className="max-w-2xl mx-auto w-full">
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4 text-left text-text-black">
-          Kate reads your resume the way a hiring committee does.
+          Kate is the executive career coach you wish you'd had the whole time.
         </h1>
-        <p className="text-lg text-gray-500 mb-12 text-left">
-          Paste your resume and the job description. Kate will tell you what they see.
-        </p>
+        <h2 className="text-lg text-gray-500 mb-12 text-left leading-relaxed">
+          Kate works with you through every stage of your search. Today, she starts with your resume.
+        </h2>
 
         <div className="space-y-8">
           {/* Resume Input Section */}
