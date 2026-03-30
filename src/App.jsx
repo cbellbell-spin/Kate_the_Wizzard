@@ -84,6 +84,7 @@ function App() {
           jobDescription: formData.jobDescription,
           v1Analysis,
           q1Answer: answer,
+          q1QuestionText: v1Analysis.question_1.question_text,
         }),
       });
 
@@ -114,8 +115,11 @@ function App() {
           resume: formData.resume,
           jobDescription: formData.jobDescription,
           v1Analysis,
+          q2Data,
           q1Answer,
           q2Answer: answer,
+          q1QuestionText: v1Analysis.question_1.question_text,
+          q2QuestionText: q2Data.question_2.question_text,
         }),
       });
 
@@ -149,7 +153,7 @@ function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-bg-dark text-text-offwhite flex flex-col">
+    <div className="min-h-screen bg-bg-offwhite text-text-black flex flex-col">
       {error && (
         <div className="fixed top-0 left-0 right-0 bg-red-900/80 text-white px-4 py-3 text-center z-50">
           {error}

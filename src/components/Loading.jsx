@@ -22,10 +22,10 @@ export default function Loading({ messages }) {
     <div className="min-h-screen flex flex-col justify-center items-center px-6">
       <div className="text-center">
         <div className="mb-8">
-          <div className="w-16 h-16 border-4 border-accent-gold border-t-transparent animate-spin mx-auto"></div>
+          <div className="w-16 h-16 border-4 border-accent-maroon border-t-transparent animate-spin mx-auto"></div>
         </div>
         <p
-          className={`text-xl text-gray-300 transition-opacity duration-500 ${
+          className={`text-xl text-gray-600 transition-opacity duration-500 ${
             fade ? 'opacity-100' : 'opacity-0'
           }`}
         >

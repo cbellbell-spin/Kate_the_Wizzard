@@ -7,12 +7,12 @@ export default {
   theme: {
     extend: {
       colors: {
-        'bg-dark': '#0a0a0a',
-        'text-offwhite': '#f0ede8',
-        'accent-gold': '#c9a84c',
+        'bg-offwhite': '#f8f6f1',
+        'text-black': '#1a1a1a',
+        'accent-maroon': '#800000',
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        serif: ['Spectral', 'Georgia', 'serif'],
       },
     },
   },

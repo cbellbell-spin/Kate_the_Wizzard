@@ -12,13 +12,8 @@
     }
   ],
   "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "api/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "index.html"
-    }
+    { "src": "/api/analyze-v1", "dest": "/api/analyze-v1.js" },
+    { "src": "/api/analyze-q2", "dest": "/api/analyze-q2.js" },
+    { "src": "/api/analyze-final", "dest": "/api/analyze-final.js" }
   ]
 }
