@@ -4,8 +4,8 @@ const API_CONFIG = {
   anthropicVersion: '2023-06-01',
 };
 
-const RESUME_LIMIT = 8000;
-const JD_LIMIT = 4000;
+const RESUME_LIMIT = 12000;
+const JD_LIMIT = 6000;
 const CONTEXT_LIMIT = 1000;
 
 /**

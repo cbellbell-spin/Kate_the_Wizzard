@@ -164,8 +164,8 @@ Empty tags are omitted. Only relevant tags for each call are included.
 
 | Field | Limit |
 |-------|-------|
-| Resume | 8,000 characters |
-| Job Description | 4,000 characters |
+| Resume | 12,000 characters |
+| Job Description | 6,000 characters |
 | Additional Context (per question) | 1,000 characters |
 
 Limits are enforced both client-side and server-side (returns HTTP 400).
