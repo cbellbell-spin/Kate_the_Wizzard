@@ -10,12 +10,53 @@ export default function FinalAnalysis({ analysis, onMeetKate }) {
   return (
     <div className="min-h-screen px-6 py-12">
       <div className="max-w-2xl mx-auto">
-        {/* Fit Tier Badge */}
+        {/* Role Fit Spectrum Badge */}
         {analysis.fit_tier && (
-          <section className="mb-6">
-            <span className="inline-block px-4 py-2 border border-accent-maroon text-accent-maroon text-sm font-semibold">
-              {analysis.fit_tier}
-            </span>
+          <section className="mb-8">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-0">
+              {/* Uphill Battle */}
+              <div
+                className={`flex-1 px-4 py-3 text-center border ${
+                  analysis.fit_tier === 'Uphill Battle'
+                    ? 'border-[#c9a84c] bg-[#c9a84c]/10'
+                    : 'border-gray-300 opacity-30'
+                }`}
+              >
+                <span className={`text-sm font-medium ${
+                  analysis.fit_tier === 'Uphill Battle' ? 'text-text-black' : 'text-gray-500'
+                }`}>
+                  Uphill Battle
+                </span>
+              </div>
+              {/* Positioning Play */}
+              <div
+                className={`flex-1 px-4 py-3 text-center border-t border-b ${
+                  analysis.fit_tier === 'Positioning Play'
+                    ? 'border-[#c9a84c] bg-[#c9a84c]/10'
+                    : 'border-gray-300 opacity-30'
+                }`}
+              >
+                <span className={`text-sm font-medium ${
+                  analysis.fit_tier === 'Positioning Play' ? 'text-text-black' : 'text-gray-500'
+                }`}>
+                  Positioning Play
+                </span>
+              </div>
+              {/* Strong Fit */}
+              <div
+                className={`flex-1 px-4 py-3 text-center border ${
+                  analysis.fit_tier === 'Strong Fit'
+                    ? 'border-[#c9a84c] bg-[#c9a84c]/10'
+                    : 'border-gray-300 opacity-30'
+                }`}
+              >
+                <span className={`text-sm font-medium ${
+                  analysis.fit_tier === 'Strong Fit' ? 'text-text-black' : 'text-gray-500'
+                }`}>
+                  Strong Fit
+                </span>
+              </div>
+            </div>
           </section>
         )}
 
@@ -91,11 +132,14 @@ export default function FinalAnalysis({ analysis, onMeetKate }) {
 
         {/* CTA */}
         <div className="pt-8 border-t border-gray-300 text-center">
+          <p className="text-lg text-gray-600 mb-6 italic">
+            Kate just showed you where you stand. She can work with you on what to do about it.
+          </p>
           <button
             onClick={onMeetKate}
             className="py-4 px-8 bg-accent-maroon text-white font-semibold text-lg hover:bg-red-900 transition-colors"
           >
-            Meet Kate
+            Keep working with Kate
           </button>
         </div>
       </div>
