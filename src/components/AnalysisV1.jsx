@@ -1,9 +1,14 @@
 import { useState } from 'react';
 
+const CONTEXT_LIMIT = 1000;
+const COUNTER_WARNING_THRESHOLD = 200;
+
 export default function AnalysisV1({ analysis, onContinue }) {
   const [selectedOption, setSelectedOption] = useState(null);
   const [selectedLabel, setSelectedLabel] = useState(null);
   const [skipped, setSkipped] = useState(false);
+  const [additionalContext, setAdditionalContext] = useState('');
+  const [showContext, setShowContext] = useState(false);
 
   if (!analysis) return null;
 
@@ -21,6 +26,24 @@ export default function AnalysisV1({ analysis, onContinue }) {
   const handleOptionSelect = (option, label) => {
     setSelectedOption(option);
     setSelectedLabel(label);
+    setShowContext(true);
+  };
+
+  const getCounterColor = (current, limit) => {
+    const remaining = limit - current.length;
+    if (remaining <= 0) return 'text-red-600';
+    if (remaining <= COUNTER_WARNING_THRESHOLD) return 'text-[#c9a84c]';
+    return 'text-gray-400';
+  };
+
+  const handleContinue = () => {
+    const contextText = additionalContext.trim() || null;
+    onContinue(selectedOption, contextText);
+  };
+
+  const handleSkip = () => {
+    setSkipped(true);
+    setShowContext(true);
   };
 
   return (
@@ -157,19 +180,36 @@ export default function AnalysisV1({ analysis, onContinue }) {
           </div>
         </section>
 
+        {/* Additional Context Field - shown after selection */}
+        {showContext && (
+          <section className="mb-10">
+            <label className="block text-accent-maroon text-sm font-medium mb-3 uppercase tracking-wide">
+              Want to add context? (optional)
+            </label>
+            <textarea
+              value={additionalContext}
+              onChange={(e) => setAdditionalContext(e.target.value)}
+              placeholder="Anything Kate should know that isn't in your resume or the JD..."
+              className="w-full h-32 px-4 py-3 bg-white border border-gray-300 text-text-black placeholder-gray-400 focus:outline-none focus:border-accent-maroon transition-colors resize-none"
+            />
+            <div className="flex justify-end mt-2">
+              <span className={`text-xs ${getCounterColor(additionalContext.length, CONTEXT_LIMIT)}`}>
+                {CONTEXT_LIMIT - additionalContext.length} characters remaining
+              </span>
+            </div>
+          </section>
+        )}
+
         {/* Actions */}
         <div className="flex items-center justify-between pt-6 border-t border-gray-300">
           <button
-            onClick={() => {
-              setSkipped(true);
-              onContinue(null);
-            }}
+            onClick={handleSkip}
             className="text-gray-500 hover:text-gray-700 transition-colors text-sm"
           >
             Skip
           </button>
           <button
-            onClick={() => onContinue(selectedOption)}
+            onClick={handleContinue}
             disabled={!selectedOption && !skipped}
             className="py-3 px-6 bg-accent-maroon text-white font-semibold hover:bg-red-900 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
