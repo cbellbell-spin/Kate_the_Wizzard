@@ -1,9 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const TYPEFORM_FORM_ID = '01KKDCN07K8DBXFGPBSXM4359S';
 
 export default function Conversion() {
   const [showTypeform, setShowTypeform] = useState(false);
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const features = [
     {
@@ -97,8 +102,11 @@ export default function Conversion() {
         {/* Typeform Embed */}
         {showTypeform && (
           <section className="mb-12">
-            <div data-tf-live={TYPEFORM_FORM_ID} />
-            <script src="//embed.typeform.com/next/embed.js" />
+            <iframe
+              src={`https://form.typeform.com/to/${TYPEFORM_FORM_ID}`}
+              className="w-full h-[500px] border border-gray-300"
+              title="Request beta access"
+            />
           </section>
         )}
 
