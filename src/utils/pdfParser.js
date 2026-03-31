@@ -4,7 +4,7 @@
 
 import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
 
-// Disable worker for Safari compatibility
+// Disable worker - Safari compatibility
 pdfjsLib.GlobalWorkerOptions.workerSrc = '';
 
 export async function parsePDFFile(file) {
