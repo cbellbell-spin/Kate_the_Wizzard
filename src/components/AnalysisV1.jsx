@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import RoleFitBadge from './RoleFitBadge';
 
 const CONTEXT_LIMIT = 1000;
