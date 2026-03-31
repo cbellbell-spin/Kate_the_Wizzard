@@ -1,94 +1,116 @@
-import { useState } from 'react';
+export default function Conversion() {
+  const betaSignupUrl = import.meta.env.NEXT_PUBLIC_BETA_SIGNUP_URL || 'https://typeform.com';
 
-export default function Conversion({ handoffSummary }) {
-  const [copied, setCopied] = useState(false);
-
-  const copyToClipboard = async (text) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
-    }
-  };
+  const features = [
+    {
+      label: 'Fit Assessment',
+      description: 'Kate interviews you once about your background and goals, then evaluates any role you\'re considering. No more prepping for jobs that were never the right fit.',
+    },
+    {
+      label: 'Interview Prep',
+      description: 'Kate helps you build a library of specific, compelling stories from your experience, then pressure-tests them until they\'re tight enough to hold up in the room.',
+    },
+    {
+      label: 'Post-Interview Debrief',
+      description: 'Share a transcript and Kate tells you what landed, where you left value on the table, and what the interviewer likely walked away thinking.',
+    },
+    {
+      label: 'Role Monitoring',
+      description: 'Tell Kate which companies you care about and she watches for new postings at your level. You stay in the conversations, not on the job boards.',
+    },
+  ];
 
   const setupSteps = [
     {
       number: '1',
       title: "You'll need Claude Pro or higher",
-      description: 'claude.ai',
+      link: 'https://claude.ai',
     },
     {
       number: '2',
       title: 'Download the Claude desktop app',
-      description: null,
+      link: null,
     },
     {
       number: '3',
-      title: 'Install Cowork',
-      description: null,
+      title: 'Enable Cowork in the Claude desktop app',
+      link: null,
     },
     {
       number: '4',
-      title: 'Add the Kate plugin',
-      description: null,
+      title: 'Install the Kate plugin (link provided with your beta invite)',
+      link: null,
     },
   ];
 
   return (
     <div className="min-h-screen px-6 py-12">
       <div className="max-w-2xl mx-auto">
-        {/* Heading */}
+        {/* Value Bridge */}
         <section className="mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-6 text-text-black">
-            This is the preview. Here's the full experience.
-          </h1>
-          <p className="text-lg text-gray-600 leading-relaxed">
-            Kate works through your entire job search with you — positioning, interview prep,
-            negotiation, offer evaluation. This analysis is where that conversation starts.
+          <p className="text-xl md:text-2xl text-text-black leading-relaxed">
+            The analysis you just got? That's five minutes with Kate. The full experience works alongside you through every stage of your search.
           </p>
         </section>
 
-        {/* Setup Steps */}
+        {/* Feature Highlights */}
+        <section className="mb-12 space-y-8">
+          {features.map((feature) => (
+            <div key={feature.label}>
+              <h3 className="text-lg font-semibold text-text-black mb-2">
+                {feature.label}
+              </h3>
+              <p className="text-gray-600 leading-relaxed">
+                {feature.description}
+              </p>
+            </div>
+          ))}
+        </section>
+
+        {/* Free + Beta Framing */}
+        <section className="mb-10">
+          <p className="text-gray-600 leading-relaxed">
+            Kate is free. The only cost is a Claude Pro subscription, which you may already have. Kate is currently in private beta, so access is limited.
+          </p>
+        </section>
+
+        {/* Beta Signup CTA */}
         <section className="mb-12">
-          <div className="space-y-4">
+          <a
+            href={betaSignupUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block py-4 px-8 bg-accent-maroon text-white font-semibold text-lg hover:bg-red-900 transition-colors"
+          >
+            Request beta access
+          </a>
+        </section>
+
+        {/* Setup Steps - Secondary/De-emphasized */}
+        <section className="border-t border-gray-300 pt-8">
+          <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-6">
+            Once you're accepted, here's how to get started:
+          </h4>
+          <div className="space-y-3">
             {setupSteps.map((step) => (
-              <div key={step.number} className="flex items-start gap-4">
-                <div className="w-8 h-8 border border-accent-maroon text-accent-maroon flex items-center justify-center font-medium flex-shrink-0">
-                  {step.number}
-                </div>
-                <div className="pt-1">
-                  <p className="text-text-black">{step.title}</p>
-                  {step.description && (
-                    <p className="text-gray-500 text-sm">{step.description}</p>
+              <div key={step.number} className="flex items-start gap-3">
+                <span className="text-gray-400 font-medium">{step.number}.</span>
+                <div>
+                  {step.link ? (
+                    <a
+                      href={step.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-600 hover:text-accent-maroon underline transition-colors"
+                    >
+                      {step.title}
+                    </a>
+                  ) : (
+                    <span className="text-gray-600">{step.title}</span>
                   )}
                 </div>
               </div>
             ))}
-          </div>
-        </section>
-
-        {/* Handoff Summary Section */}
-        <section>
-          <h2 className="text-accent-maroon text-sm font-medium mb-3 uppercase tracking-wide">
-            Start your first Kate session with this context
-          </h2>
-          <div className="bg-white border border-gray-300 p-6">
-            <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-              {handoffSummary}
-            </p>
-          </div>
-          <div className="mt-4 flex items-center gap-4">
-            <button
-              onClick={() => copyToClipboard(handoffSummary)}
-              className="py-2 px-4 border border-gray-300 text-gray-600 hover:text-text-black hover:border-gray-400 transition-colors text-sm"
-            >
-              {copied ? 'Copied!' : 'Copy to clipboard'}
-            </button>
-            <p className="text-sm text-gray-500">
-              Paste this into Kate at the start of your first session.
-            </p>
           </div>
         </section>
       </div>

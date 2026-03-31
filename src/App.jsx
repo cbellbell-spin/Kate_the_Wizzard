@@ -259,7 +259,7 @@ function App() {
       )}
 
       {stage === STAGES.CONVERSION && finalAnalysis && (
-        <Conversion handoffSummary={finalAnalysis.handoff_summary} />
+        <Conversion />
       )}
     </div>
   );
