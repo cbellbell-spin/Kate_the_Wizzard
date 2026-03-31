@@ -74,7 +74,7 @@ export default function Question({ questionData, onContinue }) {
                     : 'border-gray-300 bg-white hover:border-gray-400'
                 } ${
                   isNeutralOption(option)
-                    ? 'italic text-gray-500 bg-[rgba(0,0,0,0.015)] border-[#E5E0D8]'
+                    ? 'italic text-[#6B7280] bg-[rgba(0,0,0,0.015)] border-[#E5E0D8]'
                     : 'text-text-black'
                 }`}
               >
