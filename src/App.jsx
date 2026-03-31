@@ -22,7 +22,6 @@ const FRIENDLY_ERRORS = {
   overloaded: "Kate is handling a lot of requests right now. Please wait a moment and try again.",
   rate_limit: "You've made too many requests. Please wait a moment and try again.",
   service_unavailable: "Kate is temporarily unavailable. Please try again in a few minutes.",
-  network: "Unable to connect. Please check your internet connection and try again.",
   default: "Something unexpected happened. Please try again.",
 };
 
@@ -38,9 +37,6 @@ function getFriendlyError(error) {
   }
   if (status === 429 || message.includes('rate limit') || message.includes('too many requests')) {
     return FRIENDLY_ERRORS.rate_limit;
-  }
-  if (message.includes('network') || message.includes('fetch') || message.includes('failed to fetch') || message.includes('econnrefused')) {
-    return FRIENDLY_ERRORS.network;
   }
   return FRIENDLY_ERRORS.default;
 }
