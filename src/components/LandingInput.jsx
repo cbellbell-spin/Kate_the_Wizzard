@@ -78,7 +78,7 @@ export default function LandingInput({ onAnalyze }) {
           Kate is the executive career coach you wish you'd had the whole time.
         </h1>
         <h2 className="text-lg text-gray-500 mb-12 text-left leading-relaxed">
-          Kate works with you through every stage of your search. Today, she starts with your resume.
+          Kate works with you through every stage of your search. Today, she starts with your resume and a job description.
         </h2>
 
         {/* Honeypot field - hidden off-screen */}
@@ -92,15 +92,40 @@ export default function LandingInput({ onAnalyze }) {
           className="fixed top-[-9999px] left-[-9999px]"
         />
 
-        <div className="space-y-8">
+        <div className="space-y-6">
           {/* Resume Input Section */}
           <div>
-            <label className="block text-accent-maroon text-sm font-medium mb-3 uppercase tracking-wide">
-              Resume
-            </label>
+            <div className="flex items-baseline gap-2 mb-3">
+              <label className="text-accent-maroon text-sm font-medium uppercase tracking-wide">
+                Resume
+              </label>
+              <span className="text-xs text-gray-400">(required)</span>
+              <span className="text-xs text-gray-400">--</span>
+              {!useFallback ? (
+                <button
+                  type="button"
+                  onClick={() => setUseFallback(true)}
+                  className="text-xs text-gray-500 hover:text-gray-700 transition-colors"
+                >
+                  paste text
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUseFallback(false);
+                    setPdfText('');
+                    setFileName('');
+                  }}
+                  className="text-xs text-gray-500 hover:text-gray-700 transition-colors"
+                >
+                  upload PDF
+                </button>
+              )}
+            </div>
 
             {!useFallback ? (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div className="border border-gray-300 bg-white p-4">
                   <input
                     type="file"
@@ -119,31 +144,14 @@ export default function LandingInput({ onAnalyze }) {
                   </button>
                 </div>
 
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-300"></div>
-                  </div>
-                  <div className="relative flex justify-center">
-                    <span className="px-2 bg-bg-offwhite text-gray-400 text-sm">or</span>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setUseFallback(true)}
-                  className="w-full text-sm text-gray-500 hover:text-gray-700 transition-colors"
-                >
-                  If your PDF doesn't parse cleanly, paste your resume text here.
-                </button>
-
                 {pdfText && (
-                  <div className="mt-4 p-3 bg-gray-100 border border-gray-200 text-sm text-gray-600">
+                  <div className="p-3 bg-gray-100 border border-gray-200 text-sm text-gray-600">
                     PDF parsed successfully. {pdfText.length} characters extracted.
                   </div>
                 )}
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <textarea
                   value={resume}
                   onChange={(e) => {
@@ -151,20 +159,9 @@ export default function LandingInput({ onAnalyze }) {
                     setErrors(prev => ({ ...prev, resume: '' }));
                   }}
                   placeholder="Paste your resume text here..."
-                  className="w-full h-48 px-4 py-3 bg-white border border-gray-300 text-text-black placeholder-gray-400 focus:outline-none focus:border-accent-maroon transition-colors resize-none"
+                  className="w-full h-24 px-4 py-3 bg-white border border-gray-300 text-text-black placeholder-gray-400 focus:outline-none focus:border-accent-maroon transition-colors resize-none"
                 />
-                <div className="flex justify-between items-center">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setUseFallback(false);
-                      setPdfText('');
-                      setFileName('');
-                    }}
-                    className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
-                  >
-                    Use PDF upload instead
-                  </button>
+                <div className="flex justify-end">
                   <span className={`text-xs ${getCounterColor(resume.length, RESUME_LIMIT)}`}>
                     {RESUME_LIMIT - resume.length} characters remaining
                   </span>
@@ -178,9 +175,12 @@ export default function LandingInput({ onAnalyze }) {
 
           {/* Job Description Input */}
           <div>
-            <label className="block text-accent-maroon text-sm font-medium mb-3 uppercase tracking-wide">
-              Job Description
-            </label>
+            <div className="flex items-baseline gap-2 mb-3">
+              <label className="text-accent-maroon text-sm font-medium uppercase tracking-wide">
+                Job Description
+              </label>
+              <span className="text-xs text-gray-400">(required)</span>
+            </div>
             <textarea
               value={jobDescription}
               onChange={(e) => {
@@ -188,10 +188,9 @@ export default function LandingInput({ onAnalyze }) {
                 setErrors(prev => ({ ...prev, jobDescription: '' }));
               }}
               placeholder="Paste the job description here..."
-              className="w-full h-48 px-4 py-3 bg-white border border-gray-300 text-text-black placeholder-gray-400 focus:outline-none focus:border-accent-maroon transition-colors resize-none"
+              className="w-full h-24 px-4 py-3 bg-white border border-gray-300 text-text-black placeholder-gray-400 focus:outline-none focus:border-accent-maroon transition-colors resize-none"
             />
-            <div className="flex justify-between items-center mt-2">
-              <span className="text-xs text-gray-400"> </span>
+            <div className="flex justify-end mt-2">
               <span className={`text-xs ${getCounterColor(jobDescription.length, JD_LIMIT)}`}>
                 {JD_LIMIT - jobDescription.length} characters remaining
               </span>
