@@ -1,15 +1,23 @@
 // PDF parsing utility using pdf.js
 // Extracts text content from PDF files client-side
+// Uses legacy build for better Safari compatibility
 
-import * as pdfjsLib from 'pdfjs-dist';
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
 
-// Use jsdelivr for the worker (cdnjs doesn't have pdf.worker for v5+)
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+// Disable worker for Safari compatibility
+pdfjsLib.GlobalWorkerOptions.workerSrc = '';
 
 export async function parsePDFFile(file) {
   const arrayBuffer = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
 
+  const loadingTask = pdfjsLib.getDocument({
+    data: arrayBuffer,
+    useWorkerFetch: false,
+    isEvalSupported: false,
+    useSystemFonts: true,
+  });
+
+  const pdf = await loadingTask.promise;
   let fullText = '';
 
   for (let i = 1; i <= pdf.numPages; i++) {
