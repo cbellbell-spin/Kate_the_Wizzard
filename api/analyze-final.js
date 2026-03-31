@@ -5,7 +5,7 @@ const API_CONFIG = {
 };
 
 const RESUME_LIMIT = 12000;
-const JD_LIMIT = 6000;
+const JD_LIMIT = 12000;
 const CONTEXT_LIMIT = 1000;
 
 /**

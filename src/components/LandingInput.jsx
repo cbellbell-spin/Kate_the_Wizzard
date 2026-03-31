@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { parsePDFFile } from '../utils/pdfParser';
 
 const RESUME_LIMIT = 12000;
-const JD_LIMIT = 6000;
+const JD_LIMIT = 12000;
 const COUNTER_WARNING_THRESHOLD = 200;
 
 export default function LandingInput({ onAnalyze }) {
