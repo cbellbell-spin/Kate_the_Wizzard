@@ -1,5 +1,9 @@
+import { useState } from 'react';
+
+const TYPEFORM_FORM_ID = '01KKDCN07K8DBXFGPBSXM4359S';
+
 export default function Conversion() {
-  const betaSignupUrl = import.meta.env.NEXT_PUBLIC_BETA_SIGNUP_URL || 'https://typeform.com';
+  const [showTypeform, setShowTypeform] = useState(false);
 
   const features = [
     {
@@ -43,6 +47,10 @@ export default function Conversion() {
     },
   ];
 
+  const handleRequestAccess = () => {
+    setShowTypeform(true);
+  };
+
   return (
     <div className="min-h-screen px-6 py-12">
       <div className="max-w-2xl mx-auto">
@@ -75,44 +83,54 @@ export default function Conversion() {
         </section>
 
         {/* Beta Signup CTA */}
-        <section className="mb-12">
-          <a
-            href={betaSignupUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block py-4 px-8 bg-accent-maroon text-white font-semibold text-lg hover:bg-red-900 transition-colors"
-          >
-            Request beta access
-          </a>
-        </section>
+        {!showTypeform && (
+          <section className="mb-12">
+            <button
+              onClick={handleRequestAccess}
+              className="py-4 px-8 bg-accent-maroon text-white font-semibold text-lg hover:bg-red-900 transition-colors"
+            >
+              Request beta access
+            </button>
+          </section>
+        )}
+
+        {/* Typeform Embed */}
+        {showTypeform && (
+          <section className="mb-12">
+            <div data-tf-live={TYPEFORM_FORM_ID} />
+            <script src="//embed.typeform.com/next/embed.js" />
+          </section>
+        )}
 
         {/* Setup Steps - Secondary/De-emphasized */}
-        <section className="border-t border-gray-300 pt-8">
-          <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-6">
-            Once you're accepted, here's how to get started:
-          </h4>
-          <div className="space-y-3">
-            {setupSteps.map((step) => (
-              <div key={step.number} className="flex items-start gap-3">
-                <span className="text-gray-400 font-medium">{step.number}.</span>
-                <div>
-                  {step.link ? (
-                    <a
-                      href={step.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-gray-600 hover:text-accent-maroon underline transition-colors"
-                    >
-                      {step.title}
-                    </a>
-                  ) : (
-                    <span className="text-gray-600">{step.title}</span>
-                  )}
+        {showTypeform && (
+          <section className="border-t border-gray-300 pt-8">
+            <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-6">
+              Once you're accepted, here's how to get started:
+            </h4>
+            <div className="space-y-3">
+              {setupSteps.map((step) => (
+                <div key={step.number} className="flex items-start gap-3">
+                  <span className="text-gray-400 font-medium">{step.number}.</span>
+                  <div>
+                    {step.link ? (
+                      <a
+                        href={step.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-gray-600 hover:text-accent-maroon underline transition-colors"
+                      >
+                        {step.title}
+                      </a>
+                    ) : (
+                      <span className="text-gray-600">{step.title}</span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </section>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );
