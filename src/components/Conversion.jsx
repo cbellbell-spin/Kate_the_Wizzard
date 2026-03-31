@@ -1,14 +1,45 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 const TYPEFORM_FORM_ID = '01KKDCN07K8DBXFGPBSXM4359S';
 
 export default function Conversion() {
   const [showTypeform, setShowTypeform] = useState(false);
+  const typeformRef = useRef(null);
 
   // Scroll to top when component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  // Load Typeform embed script when showTypeform becomes true
+  useEffect(() => {
+    if (!showTypeform || !typeformRef.current) return;
+
+    // Check if script already loaded
+    const existingScript = document.querySelector('script[src="//embed.typeform.com/next/embed.js"]');
+
+    const loadTypeform = () => {
+      const container = typeformRef.current;
+      if (!container) return;
+
+      // Clear and add the data attribute
+      container.innerHTML = '';
+      container.setAttribute('data-tf-live', TYPEFORM_FORM_ID);
+
+      // Load the Typeform embed script if not already loaded
+      if (!existingScript) {
+        const script = document.createElement('script');
+        script.src = '//embed.typeform.com/next/embed.js';
+        script.async = true;
+        script.onload = () => {
+          // Script loaded, Typeform should auto-initialize
+        };
+        document.head.appendChild(script);
+      }
+    };
+
+    loadTypeform();
+  }, [showTypeform]);
 
   const features = [
     {
@@ -102,11 +133,7 @@ export default function Conversion() {
         {/* Typeform Embed */}
         {showTypeform && (
           <section className="mb-12">
-            <iframe
-              src={`https://form.typeform.com/to/${TYPEFORM_FORM_ID}`}
-              className="w-full h-[500px] border border-gray-300"
-              title="Request beta access"
-            />
+            <div ref={typeformRef} />
           </section>
         )}
 
