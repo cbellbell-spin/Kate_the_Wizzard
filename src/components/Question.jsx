@@ -23,6 +23,27 @@ export default function Question({ questionData, onContinue }) {
     );
   };
 
+  const formatAnswerText = (text) => {
+    const colonIndex = text.indexOf(':');
+    const dashIndex = text.indexOf('—');
+    const splitIndex = colonIndex !== -1 && dashIndex !== -1
+      ? Math.min(colonIndex, dashIndex)
+      : colonIndex !== -1
+        ? colonIndex
+        : dashIndex;
+
+    if (splitIndex === -1) {
+      return <span>{text}</span>;
+    }
+
+    return (
+      <>
+        <span className="font-semibold">{text.slice(0, splitIndex + 1)}</span>
+        {text.slice(splitIndex + 1)}
+      </>
+    );
+  };
+
   const handleOptionSelect = (option, label) => {
     setSelectedOption(option);
     setSelectedLabel(label);
@@ -79,7 +100,7 @@ export default function Question({ questionData, onContinue }) {
                 }`}
               >
                 <span className="font-medium mr-2">{option.label}.</span>
-                {option.text}
+                {formatAnswerText(option.text)}
               </button>
             ))}
           </div>
