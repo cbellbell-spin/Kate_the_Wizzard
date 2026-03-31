@@ -1,3 +1,5 @@
+import RoleFitBadge from './RoleFitBadge';
+
 export default function FinalAnalysis({ analysis, onMeetKate }) {
   if (!analysis) return null;
 
@@ -13,50 +15,7 @@ export default function FinalAnalysis({ analysis, onMeetKate }) {
         {/* Role Fit Spectrum Badge */}
         {analysis.fit_tier && (
           <section className="mb-8">
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-0">
-              {/* Uphill Battle */}
-              <div
-                className={`flex-1 px-4 py-3 text-center border ${
-                  analysis.fit_tier === 'Uphill Battle'
-                    ? 'border-[#c9a84c] bg-[#c9a84c]/10'
-                    : 'border-gray-300 opacity-30'
-                }`}
-              >
-                <span className={`text-sm font-medium ${
-                  analysis.fit_tier === 'Uphill Battle' ? 'text-text-black' : 'text-gray-500'
-                }`}>
-                  Uphill Battle
-                </span>
-              </div>
-              {/* Positioning Play */}
-              <div
-                className={`flex-1 px-4 py-3 text-center border-t border-b ${
-                  analysis.fit_tier === 'Positioning Play'
-                    ? 'border-[#c9a84c] bg-[#c9a84c]/10'
-                    : 'border-gray-300 opacity-30'
-                }`}
-              >
-                <span className={`text-sm font-medium ${
-                  analysis.fit_tier === 'Positioning Play' ? 'text-text-black' : 'text-gray-500'
-                }`}>
-                  Positioning Play
-                </span>
-              </div>
-              {/* Strong Fit */}
-              <div
-                className={`flex-1 px-4 py-3 text-center border ${
-                  analysis.fit_tier === 'Strong Fit'
-                    ? 'border-[#c9a84c] bg-[#c9a84c]/10'
-                    : 'border-gray-300 opacity-30'
-                }`}
-              >
-                <span className={`text-sm font-medium ${
-                  analysis.fit_tier === 'Strong Fit' ? 'text-text-black' : 'text-gray-500'
-                }`}>
-                  Strong Fit
-                </span>
-              </div>
-            </div>
+            <RoleFitBadge fitTier={analysis.fit_tier} />
           </section>
         )}
 

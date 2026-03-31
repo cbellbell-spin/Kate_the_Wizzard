@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import RoleFitBadge from './RoleFitBadge';
 
 const CONTEXT_LIMIT = 1000;
 const COUNTER_WARNING_THRESHOLD = 200;
@@ -52,55 +52,10 @@ export default function AnalysisV1({ analysis, onContinue }) {
         {/* Fit Tier - Spectrum Badge */}
         {analysis.role_fit && (
           <section className="mb-6">
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-0">
-              {/* Uphill Battle */}
-              <div
-                className={`flex-1 px-4 py-3 text-center border ${
-                  analysis.role_fit === 'Uphill Battle'
-                    ? 'border-[#c9a84c] bg-[#c9a84c]/10'
-                    : 'border-gray-300 opacity-30'
-                }`}
-              >
-                <span className={`text-sm font-medium ${
-                  analysis.role_fit === 'Uphill Battle' ? 'text-text-black' : 'text-gray-500'
-                }`}>
-                  Uphill Battle
-                </span>
-              </div>
-              {/* Positioning Play */}
-              <div
-                className={`flex-1 px-4 py-3 text-center border-t border-b ${
-                  analysis.role_fit === 'Positioning Play'
-                    ? 'border-[#c9a84c] bg-[#c9a84c]/10'
-                    : 'border-gray-300 opacity-30'
-                }`}
-              >
-                <span className={`text-sm font-medium ${
-                  analysis.role_fit === 'Positioning Play' ? 'text-text-black' : 'text-gray-500'
-                }`}>
-                  Positioning Play
-                </span>
-              </div>
-              {/* Strong Fit */}
-              <div
-                className={`flex-1 px-4 py-3 text-center border ${
-                  analysis.role_fit === 'Strong Fit'
-                    ? 'border-[#c9a84c] bg-[#c9a84c]/10'
-                    : 'border-gray-300 opacity-30'
-                }`}
-              >
-                <span className={`text-sm font-medium ${
-                  analysis.role_fit === 'Strong Fit' ? 'text-text-black' : 'text-gray-500'
-                }`}>
-                  Strong Fit
-                </span>
-              </div>
-            </div>
-            {analysis.role_fit && (
-              <p className="mt-3 text-sm text-gray-600 italic">
-                Here's what they're seeing:
-              </p>
-            )}
+            <RoleFitBadge fitTier={analysis.role_fit} />
+            <p className="mt-3 text-sm text-gray-600 italic">
+              Here's what they're seeing:
+            </p>
           </section>
         )}
 
@@ -156,9 +111,16 @@ export default function AnalysisV1({ analysis, onContinue }) {
 
         {/* Question 1 */}
         <section className="mb-10">
-          <h2 className="text-accent-maroon text-sm font-medium mb-3 uppercase tracking-wide">
-            A Question
-          </h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-accent-maroon text-sm font-medium uppercase tracking-wide">
+              A Question
+            </h2>
+            <span className="text-sm text-gray-400">1 of 2</span>
+          </div>
+          <div className="h-[3px] flex gap-1 mb-6 rounded-full overflow-hidden">
+            <div className="flex-1 bg-[#8B2635] rounded-full"></div>
+            <div className="flex-1 bg-[#E5E7EB] rounded-full"></div>
+          </div>
           <p className="text-lg mb-6 text-text-black">{analysis.question_1.question_text}</p>
           <div className="grid grid-cols-1 gap-3">
             {analysis.question_1.options.map((option) => (
@@ -170,7 +132,9 @@ export default function AnalysisV1({ analysis, onContinue }) {
                     ? 'border-accent-maroon bg-red-50'
                     : 'border-gray-300 bg-white hover:border-gray-400'
                 } ${
-                  isNeutralOption(option) ? 'text-gray-400' : 'text-text-black'
+                  isNeutralOption(option)
+                    ? 'italic text-gray-500 bg-[rgba(0,0,0,0.015)] border-[#E5E0D8]'
+                    : 'text-text-black'
                 }`}
               >
                 <span className="font-medium mr-2">{option.label}.</span>
@@ -204,9 +168,9 @@ export default function AnalysisV1({ analysis, onContinue }) {
         <div className="flex items-center justify-between pt-6 border-t border-gray-300">
           <button
             onClick={handleSkip}
-            className="text-gray-500 hover:text-gray-700 transition-colors text-sm"
+            className="text-gray-500 hover:bg-[rgba(0,0,0,0.04)] transition-colors text-sm px-2 py-1 underline"
           >
-            Skip
+            Skip this question
           </button>
           <button
             onClick={handleContinue}

@@ -124,7 +124,8 @@ export default function LandingInput({ onAnalyze }) {
           <button
             onClick={handleAnalyze}
             disabled={!isValid}
-            className="w-full py-4 px-6 bg-accent-maroon text-white font-semibold hover:bg-red-900 transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-md"
+            className="w-full py-4 px-6 bg-accent-maroon text-white hover:bg-[#6B1D2A] transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-md"
+            style={{ opacity: 1, fontWeight: 500, letterSpacing: '0.3px', borderRadius: '6px' }}
           >
             Analyze
           </button>

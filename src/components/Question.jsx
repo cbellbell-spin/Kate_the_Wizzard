@@ -51,9 +51,16 @@ export default function Question({ questionData, onContinue }) {
     <div className="min-h-screen px-6 py-12">
       <div className="max-w-2xl mx-auto">
         <section className="mb-10">
-          <h2 className="text-accent-maroon text-sm font-medium mb-3 uppercase tracking-wide">
-            Another Question
-          </h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-accent-maroon text-sm font-medium uppercase tracking-wide">
+              Another Question
+            </h2>
+            <span className="text-sm text-gray-400">2 of 2</span>
+          </div>
+          <div className="h-[3px] flex gap-1 mb-6 rounded-full overflow-hidden">
+            <div className="flex-1 bg-[#8B2635] rounded-full"></div>
+            <div className="flex-1 bg-[#E5E7EB] rounded-full"></div>
+          </div>
           <p className="text-xl mb-8 text-text-black">{questionData.question_text}</p>
 
           <div className="grid grid-cols-1 gap-4">
@@ -66,7 +73,9 @@ export default function Question({ questionData, onContinue }) {
                     ? 'border-accent-maroon bg-red-50'
                     : 'border-gray-300 bg-white hover:border-gray-400'
                 } ${
-                  isNeutralOption(option) ? 'text-gray-400' : 'text-text-black'
+                  isNeutralOption(option)
+                    ? 'italic text-gray-500 bg-[rgba(0,0,0,0.015)] border-[#E5E0D8]'
+                    : 'text-text-black'
                 }`}
               >
                 <span className="font-medium mr-2">{option.label}.</span>
@@ -100,9 +109,9 @@ export default function Question({ questionData, onContinue }) {
         <div className="flex items-center justify-between pt-6 border-t border-gray-300">
           <button
             onClick={handleSkip}
-            className="text-gray-500 hover:text-gray-700 transition-colors text-sm"
+            className="text-gray-500 hover:bg-[rgba(0,0,0,0.04)] transition-colors text-sm px-2 py-1 underline"
           >
-            Skip
+            Skip this question
           </button>
           <button
             onClick={handleContinue}
