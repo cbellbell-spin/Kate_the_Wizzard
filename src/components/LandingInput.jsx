@@ -1,5 +1,4 @@
-import { useState, useRef } from 'react';
-import { parsePDFFile } from '../utils/pdfParser';
+import { useState } from 'react';
 
 const RESUME_LIMIT = 12000;
 const JD_LIMIT = 12000;
@@ -8,40 +7,14 @@ const COUNTER_WARNING_THRESHOLD = 200;
 export default function LandingInput({ onAnalyze }) {
   const [resume, setResume] = useState('');
   const [jobDescription, setJobDescription] = useState('');
-  const [pdfText, setPdfText] = useState('');
-  const [useFallback, setUseFallback] = useState(false);
-  const [isParsing, setIsParsing] = useState(false);
-  const [fileName, setFileName] = useState('');
   const [honeypot, setHoneypot] = useState('');
   const [errors, setErrors] = useState({ resume: '', jobDescription: '' });
-  const fileInputRef = useRef(null);
-
-  const handleFileChange = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setFileName(file.name);
-    setIsParsing(true);
-
-    try {
-      const text = await parsePDFFile(file);
-      setPdfText(text);
-      setResume(text);
-      setErrors(prev => ({ ...prev, resume: '' }));
-    } catch (error) {
-      console.error('PDF parsing error:', error);
-      setUseFallback(true);
-    } finally {
-      setIsParsing(false);
-    }
-  };
 
   const validateInputs = () => {
     const newErrors = { resume: '', jobDescription: '' };
     let isValid = true;
 
-    const resumeText = useFallback ? resume : pdfText || resume;
-    if (resumeText.length > RESUME_LIMIT) {
+    if (resume.length > RESUME_LIMIT) {
       newErrors.resume = "Your resume is longer than Kate needs. Try trimming it to your most recent 10 years.";
       isValid = false;
     }
@@ -57,9 +30,7 @@ export default function LandingInput({ onAnalyze }) {
 
   const handleAnalyze = () => {
     if (!validateInputs()) return;
-
-    const resumeText = useFallback ? resume : pdfText || resume;
-    onAnalyze(resumeText, jobDescription, honeypot);
+    onAnalyze(resume, jobDescription, honeypot);
   };
 
   const isValid = resume.trim() && jobDescription.trim() && !errors.resume && !errors.jobDescription;
@@ -100,77 +71,26 @@ export default function LandingInput({ onAnalyze }) {
                 Resume
               </label>
               <span className="text-xs text-gray-400">(required)</span>
-              <span className="text-xs text-gray-400">--</span>
-              {!useFallback ? (
-                <button
-                  type="button"
-                  onClick={() => setUseFallback(true)}
-                  className="text-xs text-gray-500 hover:text-gray-700 transition-colors"
-                >
-                  paste text
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUseFallback(false);
-                    setPdfText('');
-                    setFileName('');
-                  }}
-                  className="text-xs text-gray-500 hover:text-gray-700 transition-colors"
-                >
-                  upload PDF
-                </button>
+            </div>
+            <div className="space-y-2">
+              <textarea
+                value={resume}
+                onChange={(e) => {
+                  setResume(e.target.value);
+                  setErrors(prev => ({ ...prev, resume: '' }));
+                }}
+                placeholder="Paste your resume text here..."
+                className="w-full h-24 px-4 py-3 bg-white border border-gray-300 text-text-black placeholder-gray-400 focus:outline-none focus:border-accent-maroon transition-colors resize-none"
+              />
+              <div className="flex justify-end">
+                <span className={`text-xs ${getCounterColor(resume.length, RESUME_LIMIT)}`}>
+                  {RESUME_LIMIT - resume.length} characters remaining
+                </span>
+              </div>
+              {errors.resume && (
+                <p className="text-sm text-red-600 mt-1">{errors.resume}</p>
               )}
             </div>
-
-            {!useFallback ? (
-              <div className="space-y-3">
-                <div className="border border-gray-300 bg-white p-4">
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    accept=".pdf"
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isParsing}
-                    className="w-full py-3 px-4 border border-gray-300 text-left text-gray-600 hover:border-gray-400 transition-colors shadow-sm disabled:opacity-50"
-                  >
-                    {isParsing ? 'Parsing PDF...' : fileName || 'Upload PDF'}
-                  </button>
-                </div>
-
-                {pdfText && (
-                  <div className="p-3 bg-gray-100 border border-gray-200 text-sm text-gray-600">
-                    PDF parsed successfully. {pdfText.length} characters extracted.
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <textarea
-                  value={resume}
-                  onChange={(e) => {
-                    setResume(e.target.value);
-                    setErrors(prev => ({ ...prev, resume: '' }));
-                  }}
-                  placeholder="Paste your resume text here..."
-                  className="w-full h-24 px-4 py-3 bg-white border border-gray-300 text-text-black placeholder-gray-400 focus:outline-none focus:border-accent-maroon transition-colors resize-none"
-                />
-                <div className="flex justify-end">
-                  <span className={`text-xs ${getCounterColor(resume.length, RESUME_LIMIT)}`}>
-                    {RESUME_LIMIT - resume.length} characters remaining
-                  </span>
-                </div>
-                {errors.resume && (
-                  <p className="text-sm text-red-600 mt-1">{errors.resume}</p>
-                )}
-              </div>
-            )}
           </div>
 
           {/* Job Description Input */}
