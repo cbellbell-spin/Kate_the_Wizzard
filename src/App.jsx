@@ -18,6 +18,33 @@ const STAGES = {
   VALIDATION_ERROR: 8,
 };
 
+const FRIENDLY_ERRORS = {
+  overloaded: "Kate is handling a lot of requests right now. Please wait a moment and try again.",
+  rate_limit: "You've made too many requests. Please wait a moment and try again.",
+  service_unavailable: "Kate is temporarily unavailable. Please try again in a few minutes.",
+  network: "Unable to connect. Please check your internet connection and try again.",
+  default: "Something unexpected happened. Please try again.",
+};
+
+function getFriendlyError(error) {
+  const message = error?.message || String(error).toLowerCase();
+  const status = error?.status || '';
+
+  if (status === 529 || message.includes('overloaded') || message.includes('overload')) {
+    return FRIENDLY_ERRORS.overloaded;
+  }
+  if (status === 503 || message.includes('service unavailable')) {
+    return FRIENDLY_ERRORS.service_unavailable;
+  }
+  if (status === 429 || message.includes('rate limit') || message.includes('too many requests')) {
+    return FRIENDLY_ERRORS.rate_limit;
+  }
+  if (message.includes('network') || message.includes('fetch') || message.includes('failed to fetch') || message.includes('econnrefused')) {
+    return FRIENDLY_ERRORS.network;
+  }
+  return FRIENDLY_ERRORS.default;
+}
+
 const V1_LOADING_MESSAGES = [
   "Reading your materials...",
   "Checking the hiring committee's likely read...",
@@ -87,7 +114,7 @@ function App() {
       setV1Analysis(data);
       setStage(STAGES.ANALYSIS_V1);
     } catch (err) {
-      setError(err.message);
+      setValidationError(getFriendlyError(err));
       setStage(STAGES.VALIDATION_ERROR);
     }
   }, []);
@@ -121,7 +148,7 @@ function App() {
       setQ2Data(data);
       setStage(STAGES.QUESTION_2);
     } catch (err) {
-      setError(err.message);
+      setError(getFriendlyError(err));
       setStage(STAGES.ANALYSIS_V1);
     }
   }, [formData, v1Analysis]);
@@ -159,7 +186,7 @@ function App() {
       setFinalAnalysis(data);
       setStage(STAGES.FINAL_ANALYSIS);
     } catch (err) {
-      setError(err.message);
+      setError(getFriendlyError(err));
       setStage(STAGES.QUESTION_2);
     }
   }, [formData, v1Analysis, q2Data, q1Answer, q1Context]);
