@@ -155,7 +155,7 @@ export default function AnalysisV1({ analysis, onContinue }) {
                     : 'border-gray-300 bg-white hover:border-gray-400'
                 } ${
                   isNeutralOption(option)
-                    ? 'italic text-[#6B7280] bg-[rgba(0,0,0,0.015)] border-[#E5E0D8]'
+                    ? 'text-[#6B7280] bg-[rgba(0,0,0,0.015)] border-[#E5E0D8]'
                     : 'text-text-black'
                 }`}
               >
